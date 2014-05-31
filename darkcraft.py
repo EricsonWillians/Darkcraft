@@ -3,7 +3,7 @@
 
 """
 ====================================================================
-Endless Evil
+Darkcraft - v1.0 Alpha.
 Copyright (C) <2014>  <Ericson Willians.>
 
 This program is free software: you can redistribute it and/or modify
