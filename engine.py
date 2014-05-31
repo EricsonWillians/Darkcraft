@@ -37,37 +37,35 @@ from collections import Sequence
 from itertools import product
 import collections
 import copy
-from pythun import * # My grid-based engine.
-from functions import *
+import pythun # My grid-based engine.
+import functions
 from random import randint
-from pygame import *
+import pygame
 
 # = CFG Area = <<<
 
-sys.setrecursionlimit(10000)
-
-display.set_caption("Darkcraft 1.0.")
-init()
+pygame.display.set_caption("Darkcraft 1.0.")
+pygame.init()
 
 DONE = False
-clock = time.Clock()
+clock = pygame.time.Clock()
 
-res = Global.RESOLUTIONS.get("XGA")
-screen = display.set_mode(res)
+res = pythun.Global.RESOLUTIONS.get("XGA")
+screen = pygame.display.set_mode(res)
 screen.set_alpha(None)
 
 def loadImage(path,name,colorkey=None):
 
     fullname = os.path.join(path, name)
     try:
-        i = image.load(fullname)
+        i = pygame.image.load(fullname)
     except error, message:
         print "Cannot load image:", name
         raise SystemExit, message
     if ".png" not in name:
         i = i.convert()
     else:
-        i = Surface.convert_alpha(i)
+        i = pygame.Surface.convert_alpha(i)
     if colorkey is not None:
         if colorkey is -1:
             colorkey = i.get_at((0,0))
@@ -99,7 +97,7 @@ def loadDefaultFont(size):
     """
 
     try:
-        f = font.Font(None,size)
+        f = pygame.font.Font(None,size)
     except error, message:
         print "Cannot load the default font"
         raise SystemExit, message
@@ -112,7 +110,7 @@ def loadCustomFont(path,name,size):
     """
 
     fullname = os.path.join(path,name)
-    f = font.Font(fullname,size)
+    f = pygame.font.Font(fullname,size)
     return f
 
 def loadSystemFont(name, size):
@@ -122,7 +120,7 @@ def loadSystemFont(name, size):
     """
 
     try:
-        f = font.SysFont(name,size)
+        f = pygame.font.SysFont(name,size)
     except error, message:
         print "Cannot load font: ", name
         raise SystemExit, message
@@ -135,8 +133,8 @@ def getSystemFonts():
 # = Game Area = <<<
 
 gameScreen = "GAME"
-gameGrid = Grid((16,16,64,48))
-interfaceGrid = Grid((8,8,128,96))
+gameGrid = pythun.Grid((16,16,64,48))
+interfaceGrid = pythun.Grid((8,8,128,96))
 brickWidth = gameGrid.tileWidth
 brickHeight = gameGrid.tileHeight
 interfaceWidth = res[0]/8
@@ -152,22 +150,22 @@ def gT(en,pt,c,textSize,adjust=[0,0]): # Generate Text Procedure.
 
     if language == "EN":
         t = cFS(textSize).render(en[0],1,c)
-        screen.blit(transform.scale(t,(t.get_width(),t.get_height())),
+        screen.blit(pygame.transform.scale(t,(t.get_width(),t.get_height())),
                     (gameGrid.getX(en[1])-adjust[0],gameGrid.getY(en[2])-adjust[1]))
     elif language == "PT":
         t = cFS(textSize).render(pt[0],1,c)
-        screen.blit(transform.scale(t,(t.get_width(),t.get_height())),
+        screen.blit(pygame.transform.scale(t,(t.get_width(),t.get_height())),
                     (gameGrid.getX(pt[1])-adjust[0],gameGrid.getY(pt[2])-adjust[1]))
 
 def gPT(en,pt,c,textSize,adjust=[0,0]): # Generate Pure-Pos Text Procedure.
 
     if language == "EN":
         t = loadDefaultFont(textSize).render(en[0],1,c)
-        screen.blit(transform.scale(t,(t.get_width(),t.get_height())),
+        screen.blit(pygame.transform.scale(t,(t.get_width(),t.get_height())),
                     (en[1]-adjust[0],en[2]-adjust[1]))
     elif language == "PT":
         t = loadDefaultFont(textSize).render(pt[0],1,c)
-        screen.blit(transform.scale(t,(t.get_width(),t.get_height())),
+        screen.blit(pygame.transform.scale(t,(t.get_width(),t.get_height())),
                     (pt[1]-adjust[0],pt[2]-adjust[1]))
 
 def gIS(path,name,x,y): # Generate Image Surface Procedure.
@@ -178,7 +176,7 @@ def gIS(path,name,x,y): # Generate Image Surface Procedure.
 def cGIS(sur,path,name,x,y,w,h): # Custom 'Generate Image Surface' Procedure.
 
     s = loadImage(path,name)
-    sur.blit(transform.scale(s,(w,h)),(x,y))
+    sur.blit(pygame.transform.scale(s,(w,h)),(x,y))
 
 def cW(r1,r2): # Collide With
 
@@ -188,7 +186,7 @@ def cW(r1,r2): # Collide With
         return False
 
 dungeonSize = 8
-dungeon = {(i, j): GridMap(gameGrid) for i, j in product(range(dungeonSize), repeat=2)}
+dungeon = {(i, j): pythun.GridMap(gameGrid) for i, j in product(range(dungeonSize), repeat=2)}
 currentMaze = (randint(0,dungeonSize-1),randint(0,dungeonSize-1))
 lOR = 10 # Level of Randomness.
 
@@ -232,7 +230,7 @@ class Entity():
         self.yGamePositions = dict(zip([x for x in self.keyPositions[1]], [x for x in range(0,768,brickHeight)]))
         self.xInterfacePositions = dict(zip([x for x in self.keyPositions[0]], [x for x in range(0,1024,interfaceWidth)]))
         self.yInterfacePositions = dict(zip([x for x in self.keyPositions[1]], [x for x in range(0,768, interfaceHeight)]))
-        
+
         self.info = info
 
     def getGameX(self,pos):
@@ -281,19 +279,19 @@ class ImageEntity(Entity):
     def draw(self,sizeType):
 
         if sizeType == "INGAME":
-            screen.blit(transform.scale(self.s,(brickWidth,brickHeight)),(self.x,self.y))
+            screen.blit(pygame.transform.scale(self.s,(brickWidth,brickHeight)),(self.x,self.y))
         elif sizeType == "INTERFACE":
-            screen.blit(transform.scale(self.s,(interfaceWidth,interfaceHeight)),(self.x,self.y))
+            screen.blit(pygame.transform.scale(self.s,(interfaceWidth,interfaceHeight)),(self.x,self.y))
 
 class Wall(ImageEntity):
 
     def __init__(self,path,filename,x,y):
-        
+
         self.path = path
         self.filename = filename
         self.x = x
         self.y = y
-        
+
         ImageEntity.__init__(self,path,filename,self.x,self.y)
 
 def gD(): # Generate Dungeon
@@ -319,24 +317,24 @@ def gD(): # Generate Dungeon
 def dCD(): # Draw Current Dungeon
 
     map((lambda x: dungeon[currentMaze][x]["wallEntity"].draw("INGAME")),[x for x in dungeon[currentMaze] if "wallEntity" in dungeon[currentMaze][x]])
-        
+
     if "wallEntity" in [x for x in dungeon[currentMaze][(0,0)]]:
         dungeon[currentMaze][(0,0)]["wallEntity"].draw("INGAME")
-    if key.get_pressed()[K_F12]:
+    if pygame.key.get_pressed()[pygame.K_F12]:
         for wall in dungeon[currentMaze]:
             gPT([str((wall[0]*brickWidth,wall[1]*brickHeight)),wall[0]*brickWidth,wall[1]*brickHeight],
                 [str((wall[0]*brickWidth,wall[1]*brickHeight)),wall[0]*brickWidth,wall[1]*brickHeight],(0,255,0),16)
 
 def gG(source): # Generate Ground Image
 
-    groundSurface = Surface((res[0],res[1]))
+    groundSurface = pygame.Surface((res[0],res[1]))
     map((lambda x: cGIS(groundSurface,"GFX",source,x[0],x[1],brickWidth,brickHeight)),[x for x in screenPositions])
 
     return groundSurface
 
 def gIBGI(source): # Generate Interface Background Image
 
-    iSurface = Surface((res[0],res[1]))
+    iSurface = pygame.Surface((res[0],res[1]))
     map((lambda x: cGIS(iSurface,"GFX",source,x[0],x[1],interfaceWidth,interfaceHeight)),[x for x in [(i*interfaceWidth,j*interfaceHeight) for i,j in product(range(8), repeat=2)]])
 
     return iSurface
@@ -355,7 +353,7 @@ class FontEntity():
         if language == "EN":
             self.s = cFS(64).render(self.displayCharacter[0],1,c)
         elif language == "PT":
-            self.s = cFS(64).render(self.displayCharacter[1],1,c)   
+            self.s = cFS(64).render(self.displayCharacter[1],1,c)
 
     def draw(self):
 
@@ -366,7 +364,7 @@ class Item(ImageEntity):
     def __init__(self,filename,x,y):
         ImageEntity.__init__(self,"GFX/Items",filename,x,y)
 
-ew0 = Item("ew0.png",0,0) 
+ew0 = Item("ew0.png",0,0)
 
 
 
@@ -376,25 +374,25 @@ class SelectionCursor(ImageEntity):
         ImageEntity.__init__(self,path,filename,x,y)
 
     def move(self):
-        
-        for i in range(0,16*brickHeight,brickHeight): 
+
+        for i in range(0,16*brickHeight,brickHeight):
             for j in range(0,16*brickWidth,brickWidth):
-                if (((mouse.get_pos()[0] > j) and (mouse.get_pos()[0] < (j + brickWidth)) and
-                     (mouse.get_pos()[1] > i) and (mouse.get_pos()[1] < (i + brickHeight)))):
+                if (((pygame.mouse.get_pos()[0] > j) and (pygame.mouse.get_pos()[0] < (j + brickWidth)) and
+                     (pygame.mouse.get_pos()[1] > i) and (pygame.mouse.get_pos()[1] < (i + brickHeight)))):
                     self.x = j
                     self.y = i
-        
+
 class InterfaceSelectionCursor(ImageEntity):
 
     def __init__(self,path,filename,x,y):
         ImageEntity.__init__(self,path,filename,x,y)
 
     def move(self):
-        
-        for i in range(0,8*interfaceHeight,interfaceHeight): 
+
+        for i in range(0,8*interfaceHeight,interfaceHeight):
             for j in range(0,8*interfaceWidth,interfaceWidth):
-                if (((mouse.get_pos()[0] > j) and (mouse.get_pos()[0] < (j + interfaceWidth)) and
-                     (mouse.get_pos()[1] > i) and (mouse.get_pos()[1] < (i + interfaceHeight)))):
+                if (((pygame.mouse.get_pos()[0] > j) and (pygame.mouse.get_pos()[0] < (j + interfaceWidth)) and
+                     (pygame.mouse.get_pos()[1] > i) and (pygame.mouse.get_pos()[1] < (i + interfaceHeight)))):
                     self.x = j
                     self.y = i
 
@@ -405,35 +403,35 @@ class Inventory(ImageEntity):
 
         self.interface = gIBGI(filename)
         self.cursor = InterfaceSelectionCursor("GFX","selectionCursor.png",0,0)
-        self.storage = GridMap(interfaceGrid)
+        self.storage = pythun.GridMap(interfaceGrid)
         for slot in self.storage:
-            self.storage[slot] = [0,"No hotkey",False] 
-        ew0InitialPos = (randint(0,7),randint(0,7)) 
+            self.storage[slot] = [0,"No hotkey",False]
+        ew0InitialPos = (randint(0,7),randint(0,7))
         ew0.x = self.getInterfaceX(ew0InitialPos[0])
         ew0.y = self.getInterfaceY(ew0InitialPos[1])
         self.storage[(ew0InitialPos[0],ew0InitialPos[1])][0] = ew0
 
-        self.isItemSelected = False 
-        self.slotHolder = None 
-        self.slotToBeErased = None 
-            
-    def watchForPositionalMouseRequests(self): 
+        self.isItemSelected = False
+        self.slotHolder = None
+        self.slotToBeErased = None
 
-        for e in event.get(): 
-            if e.type == MOUSEBUTTONDOWN and mouse.get_pressed()[0] == True:
+    def watchForPositionalMouseRequests(self):
+
+        for e in pygame.event.get():
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == True:
                 if self.isItemSelected == False:
-                    for slot in self.storage: 
+                    for slot in self.storage:
                         if (self.getInterfaceX(slot[0]),self.getInterfaceY(slot[1])) == (self.cursor.x,self.cursor.y):
                             if isinstance(self.storage[slot][0],Item):
                                 self.isItemSelected = True
                                 if self.slotHolder is None:
-                                    self.storage[slot][0].x = self.cursor.x 
+                                    self.storage[slot][0].x = self.cursor.x
                                     self.storage[slot][0].y = self.cursor.y
                                     self.slotHolder = self.storage[slot][0]
                                     self.slotToBeErased = slot
 
-            if e.type == MOUSEBUTTONUP and mouse.get_pressed()[0] == False:
-                if self.isItemSelected == True: 
+            if e.type == pygame.MOUSEBUTTONUP and pygame.mouse.get_pressed()[0] == False:
+                if self.isItemSelected == True:
                     for slot in list(self.storage):
                         if (self.getInterfaceX(slot[0]),self.getInterfaceY(slot[1])) == (self.cursor.x,self.cursor.y):
                             if self.slotHolder is not None:
@@ -444,14 +442,14 @@ class Inventory(ImageEntity):
                                     if slot != self.slotToBeErased:
                                         self.storage[self.slotToBeErased][0] = 0
                                         self.slotToBeErased = None
-                      
+
     def draw(self):
 
         screen.blit(self.interface,(0,0))
         self.cursor.draw("INTERFACE")
         self.cursor.move()
         for slot in self.storage:
-            try:                
+            try:
                 if isinstance(self.storage[slot][0],Item):
                     if self.isItemSelected == True:
                         self.storage[slot][0].x = self.cursor.x
@@ -473,25 +471,25 @@ class Inventory(ImageEntity):
         for slot in self.storage:
             if (self.getInterfaceX(slot[0]),self.getInterfaceY(slot[1])) == (self.cursor.x,self.cursor.y):
                 if isinstance(self.storage[slot][0],Item):
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_0] or key.get_pressed()[K_KP0])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_0] or pygame.key.get_pressed()[pygame.K_KP0])):
                             self.storage[slot][1] = "No hotkey"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_1] or key.get_pressed()[K_KP1])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1])):
                             self.storage[slot][1] = "Hotkey 1"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_2] or key.get_pressed()[K_KP2])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2])):
                             self.storage[slot][1] = "Hotkey 2"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_3] or key.get_pressed()[K_KP3])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3])):
                             self.storage[slot][1] = "Hotkey 3"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_4] or key.get_pressed()[K_KP4])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4])):
                             self.storage[slot][1] = "Hotkey 4"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_5] or key.get_pressed()[K_KP5])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5])):
                             self.storage[slot][1] = "Hotkey 5"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_6] or key.get_pressed()[K_KP6])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6])):
                             self.storage[slot][1] = "Hotkey 6"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_7] or key.get_pressed()[K_KP7])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7])):
                             self.storage[slot][1] = "Hotkey 7"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_8] or key.get_pressed()[K_KP8])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8])):
                             self.storage[slot][1] = "Hotkey 8"
-                    if (key.get_pressed()[K_LCTRL] and (key.get_pressed()[K_9] or key.get_pressed()[K_KP9])):
+                    if (pygame.key.get_pressed()[pygame.K_LCTRL] and (pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9])):
                             self.storage[slot][1] = "Hotkey 9"
 
     def watchForHotkeys(self):
@@ -500,7 +498,7 @@ class Inventory(ImageEntity):
             if (self.getInterfaceX(slot[0]),self.getInterfaceY(slot[1])) == (self.cursor.x,self.cursor.y):
                 if isinstance(self.storage[slot][0],Item):
                     if self.storage[slot][1] == "Hotkey 1":
-                        if (key.get_pressed()[K_1] or key.get_pressed()[K_KP1]):
+                        if (pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -508,17 +506,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 2":
-                        if (key.get_pressed()[K_2] or key.get_pressed()[K_KP2]):
+                        if (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -526,17 +524,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_1] or key.get_pressed()[K_KP1] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 3":
-                        if (key.get_pressed()[K_3] or key.get_pressed()[K_KP3]):
+                        if (pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -544,17 +542,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_1] or key.get_pressed()[K_KP1] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 4":
-                        if (key.get_pressed()[K_4] or key.get_pressed()[K_KP4]):
+                        if (pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -562,17 +560,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_1] or key.get_pressed()[K_KP1] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 5":
-                        if (key.get_pressed()[K_5] or key.get_pressed()[K_KP5]):
+                        if (pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -580,17 +578,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_1] or key.get_pressed()[K_KP1] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 6":
-                        if (key.get_pressed()[K_6] or key.get_pressed()[K_KP6]):
+                        if (pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -598,17 +596,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_1] or key.get_pressed()[K_KP1] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 7":
-                        if (key.get_pressed()[K_7] or key.get_pressed()[K_KP7]):
+                        if (pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -616,17 +614,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_1] or key.get_pressed()[K_KP1] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 8":
-                        if (key.get_pressed()[K_8] or key.get_pressed()[K_KP8]):
+                        if (pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -634,17 +632,17 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_1] or key.get_pressed()[K_KP1] or
-                              key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1] or
+                              pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = False
                     if self.storage[slot][1] == "Hotkey 9":
-                        if (key.get_pressed()[K_9] or key.get_pressed()[K_KP9]):
+                        if (pygame.key.get_pressed()[pygame.K_9] or pygame.key.get_pressed()[pygame.K_KP9]):
                             self.storage[slot][2] = True
                             for sl in self.storage:
                                 if isinstance(self.storage[slot][0],Item):
@@ -652,24 +650,24 @@ class Inventory(ImageEntity):
                                         if self.storage[sl][2] == True:
                                             self.storage[sl][2] = False
                                             break
-                        elif (key.get_pressed()[K_2] or key.get_pressed()[K_KP2] or
-                              key.get_pressed()[K_3] or key.get_pressed()[K_KP3] or
-                              key.get_pressed()[K_4] or key.get_pressed()[K_KP4] or
-                              key.get_pressed()[K_5] or key.get_pressed()[K_KP5] or
-                              key.get_pressed()[K_6] or key.get_pressed()[K_KP6] or
-                              key.get_pressed()[K_7] or key.get_pressed()[K_KP7] or
-                              key.get_pressed()[K_8] or key.get_pressed()[K_KP8] or
-                              key.get_pressed()[K_1] or key.get_pressed()[K_KP1]):
+                        elif (pygame.key.get_pressed()[pygame.K_2] or pygame.key.get_pressed()[pygame.K_KP2] or
+                              pygame.key.get_pressed()[pygame.K_3] or pygame.key.get_pressed()[pygame.K_KP3] or
+                              pygame.key.get_pressed()[pygame.K_4] or pygame.key.get_pressed()[pygame.K_KP4] or
+                              pygame.key.get_pressed()[pygame.K_5] or pygame.key.get_pressed()[pygame.K_KP5] or
+                              pygame.key.get_pressed()[pygame.K_6] or pygame.key.get_pressed()[pygame.K_KP6] or
+                              pygame.key.get_pressed()[pygame.K_7] or pygame.key.get_pressed()[pygame.K_KP7] or
+                              pygame.key.get_pressed()[pygame.K_8] or pygame.key.get_pressed()[pygame.K_KP8] or
+                              pygame.key.get_pressed()[pygame.K_1] or pygame.key.get_pressed()[pygame.K_KP1]):
                             self.storage[slot][2] = False
-                    if (key.get_pressed()[K_0] or key.get_pressed()[K_KP0]):
+                    if (pygame.key.get_pressed()[pygame.K_0] or pygame.key.get_pressed()[pygame.K_KP0]):
                         self.storage[slot][2] = False
-                        
+
 class Player(ImageEntity):
 
     def __init__(self,filename):
 
         self.inventory = Inventory("interface.jpg")
-  
+
         # Free Positions (Tuple for tuple in screenPositions if tuple not in list with tuple-positions of walls in the current maze.)
         self.fP = [x for x in screenPositions if x not in [(y[0]*brickWidth,y[1]*brickHeight) for y in dungeon[currentMaze] if "wallEntity" in dungeon[currentMaze][y]]]
         self.fP.sort()
@@ -681,7 +679,7 @@ class Player(ImageEntity):
         self.info["Walk Delay"] = 0.3
         self.info["Health"] = 100
         self.info["XP"] = 0
-        
+
         self.walkUp = [self.s.subsurface((x*31,0,31,30)) for x in range(3)]
         temp = []
         for i in self.walkUp:
@@ -712,61 +710,61 @@ class Player(ImageEntity):
         self.walking = False
 
         self.previousItemPos = None
-        
+
     def move(self):
 
-        if key.get_pressed()[K_F12]:
+        if pygame.key.get_pressed()[pygame.K_F12]:
             gPT([str((self.x,self.y)),self.x,self.y],[str((self.x,self.y)),self.x,self.y],(255,0,0),16)
-        if key.get_pressed()[K_w] == True or key.get_pressed()[K_UP] == True:     
+        if pygame.key.get_pressed()[pygame.K_w] == True or pygame.key.get_pressed()[pygame.K_UP] == True:
             if (self.x,self.y-brickHeight) in self.fP:
                 self.walking = True
                 self.dir = 0
                 self.y -= brickHeight
-        if key.get_pressed()[K_s] == True or key.get_pressed()[K_DOWN] == True:
+        if pygame.key.get_pressed()[pygame.K_s] == True or pygame.key.get_pressed()[pygame.K_DOWN] == True:
             if (self.x,self.y+brickHeight) in self.fP:
                 self.walking = True
                 self.dir = 1
                 self.y += brickHeight
-        if key.get_pressed()[K_a] == True or key.get_pressed()[K_LEFT] == True:
+        if pygame.key.get_pressed()[pygame.K_a] == True or pygame.key.get_pressed()[pygame.K_LEFT] == True:
             if (self.x-brickWidth,self.y) in self.fP:
                 self.walking = True
                 self.dir = 2
                 self.x -= brickWidth
-        if key.get_pressed()[K_d] == True or key.get_pressed()[K_RIGHT] == True:
+        if pygame.key.get_pressed()[pygame.K_d] == True or pygame.key.get_pressed()[pygame.K_RIGHT] == True:
             if (self.x+brickWidth,self.y) in self.fP:
                 self.walking = True
                 self.dir = 3
                 self.x += brickWidth
-        if not (key.get_pressed()[K_w] or key.get_pressed()[K_UP] or
-                key.get_pressed()[K_s] or key.get_pressed()[K_DOWN] or
-                key.get_pressed()[K_a] or key.get_pressed()[K_LEFT] or
-                key.get_pressed()[K_d] or key.get_pressed()[K_RIGHT]):
+        if not (pygame.key.get_pressed()[pygame.K_w] or pygame.key.get_pressed()[pygame.K_UP] or
+                pygame.key.get_pressed()[pygame.K_s] or pygame.key.get_pressed()[pygame.K_DOWN] or
+                pygame.key.get_pressed()[pygame.K_a] or pygame.key.get_pressed()[pygame.K_LEFT] or
+                pygame.key.get_pressed()[pygame.K_d] or pygame.key.get_pressed()[pygame.K_RIGHT]):
             self.walking = False
 
     def draw(self):
 
         if self.dir == 0:
-            screen.blit(transform.scale(self.walkUp[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
+            screen.blit(pygame.transform.scale(self.walkUp[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
             if self.walking == True:
                 self.frame += 1
             if self.frame > len(self.walkUp)-1:
                 self.frame = 0
 
         if self.dir == 1:
-            screen.blit(transform.scale(self.walkDown[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
+            screen.blit(pygame.transform.scale(self.walkDown[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
             if self.walking == True:
                 self.frame += 1
             if self.frame > len(self.walkDown)-1:
                 self.frame = 0
         if self.dir == 2:
-            screen.blit(transform.scale(self.walkLeft[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
+            screen.blit(pygame.transform.scale(self.walkLeft[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
             if self.walking == True:
                 self.frame += 1
             if self.frame > len(self.walkLeft)-1:
                 self.frame = 0
 
         if self.dir == 3:
-            screen.blit(transform.scale(self.walkRight[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
+            screen.blit(pygame.transform.scale(self.walkRight[self.frame],(brickWidth,brickHeight)),(self.x,self.y))
             if self.walking == True:
                 self.frame += 1
             if self.frame > len(self.walkRight)-1:
@@ -774,20 +772,20 @@ class Player(ImageEntity):
 
     def watchForDropCommand(self,cursor):
 
-        if key.get_pressed()[K_x]:
+        if pygame.key.get_pressed()[pygame.K_x]:
             for slot in self.inventory.storage:
                 if self.inventory.storage[slot][2] == True:
                     self.previousItemPos = (self.inventory.cursor.x,self.inventory.cursor.y)
-                    self.inventory.storage[slot][0].x = cursor.x 
+                    self.inventory.storage[slot][0].x = cursor.x
                     self.inventory.storage[slot][0].y = cursor.y
                     self.inventory.storage[slot][0].draw("INGAME")
-        if not key.get_pressed()[K_x]:
+        if not pygame.key.get_pressed()[pygame.K_x]:
             for slot in self.inventory.storage:
                 if self.inventory.storage[slot][2] == True:
                     if self.previousItemPos is not None:
                         self.inventory.storage[slot][0].x = self.previousItemPos[0]
                         self.inventory.storage[slot][0].y = self.previousItemPos[1]
- 
+
 class popUp(ImageEntity):
 
     def __init__(self,title,x,y,alpha=255):
@@ -809,4 +807,4 @@ class popUp(ImageEntity):
 
         gIBGI(filename)
 
-        
+

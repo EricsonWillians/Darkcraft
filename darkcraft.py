@@ -31,25 +31,25 @@ YOUTUBE CHANNEL: http://www.youtube.com/user/poisonewein
 
 __author__ = 'EricsonWillians'
 
-import os   
+import os
 from random import randint
-from pygame import *
-from engine import *
+import pygame
+import engine
 
-gD()
-cursor = SelectionCursor("GFX","selectionCursor.png",0,0)
-player = Player("townfolk1_f.png")
-while not DONE:
+engine.gD()
+cursor = engine.SelectionCursor("GFX","selectionCursor.png",0,0)
+player = engine.Player("townfolk1_f.png")
+while not engine.DONE:
 
-    delta = clock.tick() / 1000.0
+    delta = engine.clock.tick() / 1000.0
 
-    if key.get_pressed()[K_LALT] and key.get_pressed()[K_F4]:
-        DONE = True
+    if pygame.key.get_pressed()[pygame.K_LALT] and pygame.key.get_pressed()[pygame.K_F4]:
+        engine.DONE = True
 
-    if gameScreen == "GAME":
+    if engine.gameScreen == "GAME":
 
-        screen.blit(ground,(0,0))
-        dCD()
+        engine.screen.blit(engine.ground,(0,0))
+        engine.dCD()
         player.draw()
         player.info["Walk Cooldown"] -= delta
         if player.info["Walk Cooldown"] <=  0:
@@ -59,30 +59,30 @@ while not DONE:
         cursor.move()
         player.watchForDropCommand(cursor)
 
-        gT([str(currentMaze),1,1],[str(currentMaze),1,1],(255,255,255),64,[50,40]) # Current Maze.
-        if key.get_pressed()[K_F11]:
-            gT(["FPS: " + str(clock.get_fps()),1,15],["FPS: " + str(clock.get_fps()),1,15],(200,255,200),32,[50,0]) # FPS.
-            gT(["Walk Cooldown: " + str(player.info["Walk Cooldown"]),5,15],["Walk Cooldown: " + str(player.info["Walk Cooldown"]),5,15],(255,255,255),32,[60,0]) # Player Walk Cooldown.
-         
-        if key.get_pressed()[K_i] or mouse.get_pressed()[1]:
-            gameScreen = "INVENTORY"
+        engine.gT([str(engine.currentMaze),1,1],[str(engine.currentMaze),1,1],(255,255,255),64,[50,40]) # Current Maze.
+        if pygame.key.get_pressed()[pygame.K_F11]:
+            engine.gT(["FPS: " + str(clock.get_fps()),1,15],["FPS: " + str(clock.get_fps()),1,15],(200,255,200),32,[50,0]) # FPS.
+            engine.gT(["Walk Cooldown: " + str(player.info["Walk Cooldown"]),5,15],["Walk Cooldown: " + str(player.info["Walk Cooldown"]),5,15],(255,255,255),32,[60,0]) # Player Walk Cooldown.
 
-    if gameScreen == "INVENTORY":
+        if pygame.key.get_pressed()[pygame.K_i] or pygame.mouse.get_pressed()[1]:
+            engine.gameScreen = "INVENTORY"
+
+    if engine.gameScreen == "INVENTORY":
 
         player.inventory.draw()
         player.inventory.watchForHotkeys()
         player.inventory.watchForHotkeyAssignments()
         player.inventory.watchForPositionalMouseRequests()
 
-        if key.get_pressed()[K_ESCAPE]:
-            gameScreen = "GAME"
+        if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            engine.gameScreen = "GAME"
 
-    for e in event.get():
-        
-        if e.type == QUIT:
-            
-            DONE = True
+    for e in pygame.event.get():
 
-    display.update()
+        if e.type == pygame.QUIT:
 
-quit()
+            engine.DONE = True
+
+    pygame.display.update()
+
+pygame.quit()
