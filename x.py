@@ -1,5 +1,3 @@
-# 555555555555555
-
 from pygame import *
 
 clock = time.Clock()
