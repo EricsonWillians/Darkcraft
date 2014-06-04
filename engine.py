@@ -106,7 +106,7 @@ def loadDefaultFont(size):
 def loadCustomFont(path,name,size):
 
     """
-    A function to load the default system font (Good for cross-platform games).
+    A function to load a custom font from a file.
     """
 
     fullname = os.path.join(path,name)
